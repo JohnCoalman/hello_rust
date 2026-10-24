@@ -26,7 +26,7 @@ jobs:
         run: rustup target add wasm32-unknown-unknown
 
       - name: Installer Trunk
-        uses: jetli/trunk-action@vv0.16.0 # Installe Trunk rapidement sur l'CI
+        uses: jetli/trunk-action@v0.16.0 # Installe Trunk rapidement sur l'CI
         with:
           version: 'latest'
 
