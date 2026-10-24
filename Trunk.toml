@@ -1,0 +1,3 @@
+[build]
+# Le nom de votre dépôt GitHub
+public_url = "/hello_rust/"
