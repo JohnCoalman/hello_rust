@@ -3,7 +3,7 @@ name: Release Binaries
 on:
   push:
     tags:
-      - 'v1.0.2' # Se déclenche dès que vous poussez un tag commençant par 'v' (ex: v1.0.0)
+      - 'v*' # Se déclenche dès que vous poussez un tag commençant par 'v' (ex: v1.0.0)
 
 permissions:
   contents: write
