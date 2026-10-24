@@ -17,10 +17,9 @@
 
 </div>
 
-
 <p align="center">
   <a href="https://github.com/JohnCoalman/hello_rust/actions/workflows/ci.yml?query=branch%3Amain"><img src="https://github.com/JohnCoalman/hello_rust/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI" /></a>
-  <a href="https://github.com/tangency-labs/solidcraft/releases/latest"><img src="https://img.shields.io/github/v/release/JohnCoalman/hello_rust?label=release" alt="Latest release" /></a>
+  <a href="https://github.com/JohnCoalman/hello_rust/releases/latest"><img src="https://img.shields.io/github/v/release/JohnCoalman/hello_rust?label=release" alt="Latest release" /></a>
   <a href="https://github.com/JohnCoalman/hello_rust/releases"><img src="https://img.shields.io/github/downloads/JohnCoalman/hello_rust/total?label=downloads" alt="Downloads" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/JohnCoalman/hello_rust" alt="Licence" /></a>
   <a href="https://github.com/JohnCoalman/hello_rust/stargazers"><img src="https://img.shields.io/github/stars/JohnCoalman/hello_rust?style=flat" alt="Stars" /></a>
