@@ -1,24 +1,46 @@
-name: Rust CI
+name: Deploy WebAssembly to GitHub Pages
 
 on:
   push:
     branches: [ "master", "main" ]
-  pull_request:
-    branches: [ "master", "main" ]
+
+# Autoriser le déploiement sur GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Autoriser un seul déploiement concurrent
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Récupérer le code
         uses: actions/checkout@v4
 
-      - name: Installer Rust
-        uses: dtolnay/rust-toolchain@stable
+      - name: Installer la cible WebAssembly
+        run: rustup target add wasm32-unknown-unknown
 
-      - name: Mettre en cache Cargo
-        uses: Swatinem/rust-cache@v2
+      - name: Installer Trunk
+        uses: jetli/trunk-action@vv0.16.0 # Installe Trunk rapidement sur l'CI
+        with:
+          version: 'latest'
 
-      - name: Compiler et tester
-        run: cargo test --release
+      - name: Compiler le projet avec Trunk
+        run: trunk build --release
+
+      - name: Configurer les pages GitHub
+        uses: actions/configure-pages@v4
+
+      - name: Télécharger l'artefact du dossier dist
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'dist'
+
+      - name: Déployer sur GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
