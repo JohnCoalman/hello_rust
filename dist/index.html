@@ -1,13 +1,31 @@
 <!DOCTYPE html>
 <html lang="fr">
-    <head>
-        <meta charset="utf-8" />
-        <title>Mon premier WebAssembly en Rust</title>
-        <!-- C'est ici qu'on indique à Trunk quel est le point d'entrée Rust -->
-        
+<head>
+    <meta charset="utf-8" />
+    <title>Mon Appli Egui en Rust</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            height: 100% !important;
+            width: 100% !important;
+            overflow: hidden;
+            background-color: #131313;
+        }
+        #the_canvas_id {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+<link rel="modulepreload" href="/hello_rust/hello_rust-90e21e6beac15087.js" crossorigin="anonymous" integrity="sha384-KiRuPoPt9w0PYn0MzeeHnQgRg8c//ecCHQ+cqn+YM+k5TpvNYP8Wupvwi8naeB46"><link rel="preload" href="/hello_rust/hello_rust-2b5dbdd01ef3bcb9_bg.wasm" crossorigin="anonymous" integrity="sha384-vZGHB6EcB6nOpfDugNOIVF6VGAl+LHHStHGlWOL7YqQvtROmy3uXF9ARMZzfL30y" as="fetch" type="application/wasm"></head>
+<body>
+    <!-- Le canvas où eframe va dessiner l'interface -->
+    <canvas id="the_canvas_id"></canvas>
+
 <script type="module">
-import init, * as bindings from '/hello_rust-dae103676a740f0a.js';
-const wasm = await init('/hello_rust-6cd15b80274cf2c_bg.wasm');
+import init, * as bindings from '/hello_rust/hello_rust-90e21e6beac15087.js';
+const wasm = await init({ module_or_path: '/hello_rust/hello_rust-2b5dbdd01ef3bcb9_bg.wasm' });
 
 
 window.wasmBindings = bindings;
@@ -15,10 +33,7 @@ window.wasmBindings = bindings;
 
 dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
 
-</script>
-    <link rel="modulepreload" href="/hello_rust-dae103676a740f0a.js" crossorigin="anonymous" integrity="sha384-aW+eziq85qQuC3zjdFJbrN7Di4AHquIzz9MfdkSZwmSAFMDGqXIfQve83cRndayd"><link rel="preload" href="/hello_rust-6cd15b80274cf2c_bg.wasm" crossorigin="anonymous" integrity="sha384-AyVrmewa+rU2z+9MoZ5DtkrFl6IcEX9N8lS7VHZrv89O0kWJKt/p1I2Dc4u4+JdJ" as="fetch" type="application/wasm"></head>
-    <body>
-    <script>"use strict";
+</script><script>"use strict";
 
 (function () {
 
