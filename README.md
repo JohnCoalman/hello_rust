@@ -10,10 +10,8 @@
 
 <div align="center">
 
-[![Download for Windows][badge-windows]][windows-msi]
-[![Download for macOS][badge-macos]][macos-dmg]
-[![Download for Linux][badge-linux]][linux-appimage]
-[![Try it in your browser][badge-web]][web-app]
+[![Téléchargement pour Windows][badge-windows]][windows-exe]
+[![Essayez dans votre navigateur][badge-web]][web-app]
 
 </div>
 
@@ -29,10 +27,6 @@
 
 
 [badge-windows]: https://img.shields.io/badge/Windows-Download-0078D6?style=for-the-badge&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0yIDJoOS41djkuNUgyek0xMi41IDJIMjJ2OS41aC05LjV6TTIgMTIuNWg5LjVWMjJIMnpNMTIuNSAxMi41SDIyVjIyaC05LjV6Ii8%2BPC9zdmc%2B
-[badge-macos]: https://img.shields.io/badge/macOS-Download-333333?style=for-the-badge&logo=apple&logoColor=white
-[badge-linux]: https://img.shields.io/badge/Linux-AppImage-E95420?style=for-the-badge&logo=linux&logoColor=white
 [badge-web]: https://img.shields.io/badge/Web-Try_in_browser-2EA44F?style=for-the-badge&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIj48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMCIvPjxwYXRoIGQ9Ik0yIDEyaDIwTTEyIDJhMTUgMTUgMCAwIDEgMCAyME0xMiAyYTE1IDE1IDAgMCAwIDAgMjAiLz48L3N2Zz4%3D
-[windows-msi]: https://github.com/tangency-labs/JohnCoalman/hello_rust/latest/hello_world.exe
-[macos-dmg]: https://github.com/JohnCoalman/hello_rust/releases/latest/hello_world.dmg
-[linux-appimage]: https://github.com/JohnCoalman/hello_rust/releases/latest/hello_world.AppImage
+[windows-exe]: https://github.com/tangency-labs/JohnCoalman/hello_rust/target/release/hello_rust.exe"
 [web-app]: https://johncoalman.github.io/hello_rust/
