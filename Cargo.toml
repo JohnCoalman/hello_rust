@@ -1,8 +1,13 @@
 [package]
 name = "hello_rust"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 
 [dependencies]
-wasm-bindgen = "=0.2.89"
-web-sys = { version = "0.3", features = ["Document", "Element", "Window", "HtmlElement"] }
+eframe = "0.31.0"
+egui = "0.31.0"
+
+# Dépendances spécifiques pour la version WebAssembly
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen-futures = "0.4"
+web-sys = { version = "0.3", features = ["Window", "Document", "Location", "HtmlCanvasElement", "Element"] }
