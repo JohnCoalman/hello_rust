@@ -1,6 +1,6 @@
 [package]
 name = "hello_rust"
-version = "1.0.8"
+version = "1.0.9"
 edition = "2024"
 repository = "https://github.com/JohnCoalman/hello_rust.git"
 authors = ["John Coalman"]

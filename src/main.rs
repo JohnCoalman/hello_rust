@@ -113,23 +113,35 @@ impl MyApp {
     }
 }
 
-// Fonction pour télécharger et lancer l'installeur .msi officiel de cargo-dist (uniquement en natif)
+// Fonction pour télécharger le fichier d'update et l'appliquer proprement via un script batch
 #[cfg(not(target_arch = "wasm32"))]
 fn trigger_cargo_dist_update() -> Result<(), Box<dyn std::error::Error>> {
     #[cfg(target_os = "windows")]
     {
-        let msi_url = "https://github.com/JohnCoalman/hello_rust/releases/latest/download/hello_rust-x86_64-pc-windows-msvc.msi";
+        // URL vers l'artefact d'update généré par cargo-dist pour Windows x86_64
+        let update_url = "https://github.com/JohnCoalman/hello_rust/releases/latest/download/hello_rust-x86_64-pc-windows-msvc-update";
         
         let client = reqwest::blocking::Client::builder()
             .user_agent("hello_rust-app")
             .build()?;
             
-        let mut response = client.get(msi_url).send()?;
-        let mut dest = std::fs::File::create("update.msi")?;
+        let mut response = client.get(update_url).send()?;
+        let mut dest = std::fs::File::create("update_new.exe")?;
         std::io::copy(&mut response, &mut dest)?;
 
-        std::process::Command::new("msiexec")
-            .args(&["/i", "update.msi"])
+        // Création du script batch de remplacement
+        let batch_content = r#"
+@echo off
+timeout /t 2 /nobreak > nul
+move /y update_new.exe hello_rust.exe
+start hello_rust.exe
+del %0
+"#;
+        std::fs::write("updater.bat", batch_content)?;
+
+        // Lancement du script batch en arrière-plan
+        std::process::Command::new("cmd")
+            .args(&["/C", "updater.bat"])
             .spawn()?;
     }
 
