@@ -1,13 +1,31 @@
 [package]
 name = "hello_rust"
-version = "0.1.0"
-edition = "2021"
+version = "1.0.4"
+edition = "2024"
+repository = "https://github.com/JohnCoalman/hello_rust.git"
+authors = ["John Coalman"]
+description = "Une application eframe/egui moderne"
+
+[package.metadata.wix]
+upgrade-guid = "94A57383-45E3-4E31-8DC8-611F96A795FB"
+path-guid = "5EE91F68-8D39-45DE-84EF-4EF0A0D9BCEA"
+license = false
+eula = false
 
 [dependencies]
 eframe = "0.31.0"
 egui = "0.31.0"
+reqwest = { version = "0.12", features = ["blocking", "json"] }
+serde = { version = "1.0", features = ["derive"] }
+open = "5.0"
+tokio = { version = "1.0", features = ["full"] }
 
 # Dépendances spécifiques pour la version WebAssembly
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen-futures = "0.4"
 web-sys = { version = "0.3", features = ["Window", "Document", "Location", "HtmlCanvasElement", "Element"] }
+
+# The profile that 'dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
