@@ -117,7 +117,7 @@ fn trigger_cargo_dist_update() -> Result<(), Box<dyn std::error::Error>> {
     #[cfg(target_os = "windows")]
     {
         // Commande officielle recommandée par cargo-dist pour installer/mettre à jour via PowerShell
-        let ps_command = "irm https://github.com/JohnCoalman/hello_rust/releases/latest/download/installer.ps1 | iex";
+        let ps_command = "irm https://github.com/JohnCoalman/hello_rust/releases/latest/download/hello_rust-installer.ps1 | iex";
         std::process::Command::new("powershell")
             .args(&["-NoProfile", "-Command", ps_command])
             .spawn()?;
@@ -169,6 +169,7 @@ impl eframe::App for MyApp {
                         egui::Color32::LIGHT_GREEN,
                         format!("Bonjour {}, vous avez {} ans et vous avez cliqué {} fois.", self.name, self.age, self.counter)
                     );
+                    ui.label(format!("Version actuelle de l'application : {}", self.current_version));
                 }
                 SelectedTab::MiseAJour => {
                     ui.heading("🔄 Gestion des mises à jour (Cargo-Dist)");
