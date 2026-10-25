@@ -88,8 +88,9 @@ impl Default for MyApp {
     }
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 impl MyApp {
-    // Fonction pour interroger l'API GitHub
+    // Fonction pour interroger l'API GitHub (uniquement en natif)
     fn check_for_updates(&mut self) {
         self.checking = true;
         let url = "https://api.github.com/repos/JohnCoalman/hello_rust/releases/latest";
@@ -112,23 +113,23 @@ impl MyApp {
     }
 }
 
-// Fonction pour déclencher la mise à jour officielle via le script cargo-dist (PowerShell sous Windows)
+// Fonction pour télécharger et lancer l'installeur .msi officiel de cargo-dist (uniquement en natif)
+#[cfg(not(target_arch = "wasm32"))]
 fn trigger_cargo_dist_update() -> Result<(), Box<dyn std::error::Error>> {
     #[cfg(target_os = "windows")]
     {
-        // Commande officielle recommandée par cargo-dist pour installer/mettre à jour via PowerShell
-        let ps_command = "irm https://github.com/JohnCoalman/hello_rust/releases/latest/download/hello_rust-installer.ps1 | iex";
-        std::process::Command::new("powershell")
-            .args(&["-NoProfile", "-Command", ps_command])
-            .spawn()?;
-    }
+        let msi_url = "https://github.com/JohnCoalman/hello_rust/releases/latest/download/hello_rust-x86_64-pc-windows-msvc.msi";
+        
+        let client = reqwest::blocking::Client::builder()
+            .user_agent("hello_rust-app")
+            .build()?;
+            
+        let mut response = client.get(msi_url).send()?;
+        let mut dest = std::fs::File::create("update.msi")?;
+        std::io::copy(&mut response, &mut dest)?;
 
-    #[cfg(not(target_os = "windows"))]
-    {
-        // Équivalent shell pour Linux/macOS si besoin
-        let sh_command = "curl --proto '=https' --tlsv1.2 -sSf https://github.com/JohnCoalman/hello_rust/releases/latest/download/installer.sh | sh";
-        std::process::Command::new("sh")
-            .args(&["-c", sh_command])
+        std::process::Command::new("msiexec")
+            .args(&["/i", "update.msi"])
             .spawn()?;
     }
 
@@ -175,45 +176,59 @@ impl eframe::App for MyApp {
                     ui.heading("🔄 Gestion des mises à jour (Cargo-Dist)");
                     ui.separator();
 
-                    ui.label(format!("Version actuelle de l'application : {}", self.current_version));
-                    
-                    ui.add_space(10.0);
-
-                    if ui.button("Vérifier les nouvelles versions").clicked() {
-                        self.check_for_updates();
-                    }
-
-                    if self.checking {
-                        ui.add_space(5.0);
-                        ui.spinner();
-                        ui.label("Vérification auprès de GitHub en cours...");
-                    }
-
-                    ui.add_space(10.0);
-
-                    if self.update_available {
+                    // --- VERSION WEBASSEMBLY ---
+                    #[cfg(target_arch = "wasm32")]
+                    {
+                        ui.label(format!("Version actuelle (Web) : {}", self.current_version));
+                        ui.add_space(10.0);
                         ui.colored_label(
-                            egui::Color32::YELLOW,
-                            format!("✨ Une nouvelle version est disponible : {} !", self.latest_version.as_deref().unwrap_or(""))
+                            egui::Color32::LIGHT_BLUE,
+                            "ℹ️ Les mises à jour automatiques via MSI sont réservées à l'application native Windows."
                         );
-
-                        ui.add_space(5.0);
-                        if ui.button("📥 Appliquer la mise à jour officielle").clicked() {
-                            if let Err(e) = trigger_cargo_dist_update() {
-                                eprintln!("Erreur lors du lancement de la mise à jour : {}", e);
-                            } else {
-                                // Quitter l'application pour laisser le script installer la nouvelle version propre
-                                std::process::exit(0);
-                            }
-                        }
-                    } else if self.latest_version.is_some() {
-                        ui.colored_label(egui::Color32::LIGHT_GREEN, "✅ Votre application est déjà à jour !");
                     }
 
-                    ui.add_space(20.0);
-                    ui.separator();
-                    if ui.button("🌐 Ouvrir la page des Releases GitHub").clicked() {
-                        let _ = open::that("https://github.com/JohnCoalman/hello_rust/releases");
+                    // --- VERSION NATIVE (Windows / Linux / macOS) ---
+                    #[cfg(not(target_arch = "wasm32"))]
+                    {
+                        ui.label(format!("Version actuelle de l'application : {}", self.current_version));
+                        
+                        ui.add_space(10.0);
+
+                        if ui.button("Vérifier les nouvelles versions").clicked() {
+                            self.check_for_updates();
+                        }
+
+                        if self.checking {
+                            ui.add_space(5.0);
+                            ui.spinner();
+                            ui.label("Vérification auprès de GitHub en cours...");
+                        }
+
+                        ui.add_space(10.0);
+
+                        if self.update_available {
+                            ui.colored_label(
+                                egui::Color32::YELLOW,
+                                format!("✨ Une nouvelle version est disponible : {} !", self.latest_version.as_deref().unwrap_or(""))
+                            );
+
+                            ui.add_space(5.0);
+                            if ui.button("📥 Télécharger et installer le MSI").clicked() {
+                                if let Err(e) = trigger_cargo_dist_update() {
+                                    eprintln!("Erreur lors du lancement de la mise à jour : {}", e);
+                                } else {
+                                    std::process::exit(0);
+                                }
+                            }
+                        } else if self.latest_version.is_some() {
+                            ui.colored_label(egui::Color32::LIGHT_GREEN, "✅ Votre application est déjà à jour !");
+                        }
+
+                        ui.add_space(20.0);
+                        ui.separator();
+                        if ui.button("🌐 Ouvrir la page des Releases GitHub").clicked() {
+                            let _ = open::that("https://github.com/JohnCoalman/hello_rust/releases");
+                        }
                     }
                 }
             }
