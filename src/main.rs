@@ -71,7 +71,6 @@ struct MyApp {
     latest_version: Option<String>,
     update_available: bool,
     checking: bool,
-    updating: bool,
 }
 
 impl Default for MyApp {
@@ -81,11 +80,10 @@ impl Default for MyApp {
             age: 30,
             counter: 0,
             current_tab: SelectedTab::Application,
-            current_version: format!("v{}", env!("CARGO_PKG_VERSION")), // 👈 Récupéré dynamiquement du Cargo.toml
+            current_version: format!("v{}", env!("CARGO_PKG_VERSION")),
             latest_version: None,
             update_available: false,
             checking: false,
-            updating: false,
         }
     }
 }
@@ -114,34 +112,27 @@ impl MyApp {
     }
 }
 
-// Fonction globale pour télécharger le .exe et appliquer la mise à jour sous Windows
-fn download_and_apply_update() -> Result<(), Box<dyn std::error::Error>> {
-    let url = "https://github.com/JohnCoalman/hello_rust/releases/latest/download/hello_rust.exe";
-    
-    // 1. Télécharger le nouveau .exe dans un fichier temporaire
-    let client = reqwest::blocking::Client::builder().user_agent("hello_rust-app").build()?;
-    let mut response = client.get(url).send()?;
-    
-    let mut dest = std::fs::File::create("update.exe")?;
-    std::io::copy(&mut response, &mut dest)?;
+// Fonction pour déclencher la mise à jour officielle via le script cargo-dist (PowerShell sous Windows)
+fn trigger_cargo_dist_update() -> Result<(), Box<dyn std::error::Error>> {
+    #[cfg(target_os = "windows")]
+    {
+        // Commande officielle recommandée par cargo-dist pour installer/mettre à jour via PowerShell
+        let ps_command = "irm https://github.com/JohnCoalman/hello_rust/releases/latest/download/installer.ps1 | iex";
+        std::process::Command::new("powershell")
+            .args(&["-NoProfile", "-Command", ps_command])
+            .spawn()?;
+    }
 
-    // 2. Créer un script batch pour remplacer l'ancien exe et relancer l'app
-    let batch_content = r#"
-    @echo off
-    timeout /t 2 /nobreak > nul
-    move /y update.exe hello_rust.exe
-    start hello_rust.exe
-    del %0
-    "#;
+    #[cfg(not(target_os = "windows"))]
+    {
+        // Équivalent shell pour Linux/macOS si besoin
+        let sh_command = "curl --proto '=https' --tlsv1.2 -sSf https://github.com/JohnCoalman/hello_rust/releases/latest/download/installer.sh | sh";
+        std::process::Command::new("sh")
+            .args(&["-c", sh_command])
+            .spawn()?;
+    }
 
-    std::fs::write("updater.bat", batch_content)?;
-
-    // 3. Lancer le script et quitter l'application
-    std::process::Command::new("cmd")
-        .args(&["/C", "updater.bat"])
-        .spawn()?;
-
-    std::process::exit(0);
+    Ok(())
 }
 
 // Implémentation de l'interface graphique avec egui
@@ -180,7 +171,7 @@ impl eframe::App for MyApp {
                     );
                 }
                 SelectedTab::MiseAJour => {
-                    ui.heading("🔄 Gestion des mises à jour");
+                    ui.heading("🔄 Gestion des mises à jour (Cargo-Dist)");
                     ui.separator();
 
                     ui.label(format!("Version actuelle de l'application : {}", self.current_version));
@@ -206,20 +197,22 @@ impl eframe::App for MyApp {
                         );
 
                         ui.add_space(5.0);
-                        if self.updating {
-                            ui.spinner();
-                            ui.label("Téléchargement et installation en cours...");
-                        } else if ui.button("📥 Télécharger et installer automatiquement").clicked() {
-                            self.updating = true;
-                            // Lancer le téléchargement dans un thread pour ne pas bloquer l'UI
-                            std::thread::spawn(|| {
-                                if let Err(e) = download_and_apply_update() {
-                                    eprintln!("Erreur de mise à jour : {}", e);
-                                }
-                            });
+                        if ui.button("📥 Appliquer la mise à jour officielle").clicked() {
+                            if let Err(e) = trigger_cargo_dist_update() {
+                                eprintln!("Erreur lors du lancement de la mise à jour : {}", e);
+                            } else {
+                                // Quitter l'application pour laisser le script installer la nouvelle version propre
+                                std::process::exit(0);
+                            }
                         }
                     } else if self.latest_version.is_some() {
                         ui.colored_label(egui::Color32::LIGHT_GREEN, "✅ Votre application est déjà à jour !");
+                    }
+
+                    ui.add_space(20.0);
+                    ui.separator();
+                    if ui.button("🌐 Ouvrir la page des Releases GitHub").clicked() {
+                        let _ = open::that("https://github.com/JohnCoalman/hello_rust/releases");
                     }
                 }
             }
