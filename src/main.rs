@@ -88,9 +88,10 @@ impl Default for MyApp {
     }
 }
 
+// --- LOGIQUE NATIVE (Isolée du WebAssembly) ---
 #[cfg(not(target_arch = "wasm32"))]
 impl MyApp {
-    // Fonction pour interroger l'API GitHub (uniquement en natif)
+    // Fonction pour interroger l'API GitHub
     fn check_for_updates(&mut self) {
         self.checking = true;
         let url = "https://api.github.com/repos/JohnCoalman/hello_rust/releases/latest";
@@ -113,35 +114,25 @@ impl MyApp {
     }
 }
 
-// Fonction pour télécharger le fichier d'update et l'appliquer proprement via un script batch
+// Fonction pour télécharger et lancer l'installeur .msi officiel (Standard industriel cargo-dist)
 #[cfg(not(target_arch = "wasm32"))]
 fn trigger_cargo_dist_update() -> Result<(), Box<dyn std::error::Error>> {
     #[cfg(target_os = "windows")]
     {
-        // URL vers l'artefact d'update généré par cargo-dist pour Windows x86_64
-        let update_url = "https://github.com/JohnCoalman/hello_rust/releases/latest/download/hello_rust-x86_64-pc-windows-msvc-update";
+        // URL exacte du fichier .msi généré par cargo-dist dans les releases GitHub
+        let msi_url = "https://github.com/JohnCoalman/hello_rust/releases/latest/download/hello_rust-x86_64-pc-windows-msvc.msi";
         
         let client = reqwest::blocking::Client::builder()
             .user_agent("hello_rust-app")
             .build()?;
             
-        let mut response = client.get(update_url).send()?;
-        let mut dest = std::fs::File::create("update_new.exe")?;
+        let mut response = client.get(msi_url).send()?;
+        let mut dest = std::fs::File::create("update.msi")?;
         std::io::copy(&mut response, &mut dest)?;
 
-        // Création du script batch de remplacement
-        let batch_content = r#"
-@echo off
-timeout /t 2 /nobreak > nul
-move /y update_new.exe hello_rust.exe
-start hello_rust.exe
-del %0
-"#;
-        std::fs::write("updater.bat", batch_content)?;
-
-        // Lancement du script batch en arrière-plan
-        std::process::Command::new("cmd")
-            .args(&["/C", "updater.bat"])
+        // Lancement de l'installeur Windows MSI (msiexec)
+        std::process::Command::new("msiexec")
+            .args(&["/i", "update.msi"])
             .spawn()?;
     }
 
@@ -185,21 +176,21 @@ impl eframe::App for MyApp {
                     ui.label(format!("Version actuelle de l'application : {}", self.current_version));
                 }
                 SelectedTab::MiseAJour => {
-                    ui.heading("🔄 Gestion des mises à jour (Cargo-Dist)");
+                    ui.heading("🔄 Gestion des mises à jour");
                     ui.separator();
 
-                    // --- VERSION WEBASSEMBLY ---
+                    // --- COMPORTEMENT WEBASSEMBLY ---
                     #[cfg(target_arch = "wasm32")]
                     {
                         ui.label(format!("Version actuelle (Web) : {}", self.current_version));
                         ui.add_space(10.0);
                         ui.colored_label(
                             egui::Color32::LIGHT_BLUE,
-                            "ℹ️ Les mises à jour automatiques via MSI sont réservées à l'application native Windows."
+                            "ℹ️ Le site web se met à jour automatiquement à chaque déploiement sur GitHub Pages."
                         );
                     }
 
-                    // --- VERSION NATIVE (Windows / Linux / macOS) ---
+                    // --- COMPORTEMENT NATIF (Windows / Bureau) ---
                     #[cfg(not(target_arch = "wasm32"))]
                     {
                         ui.label(format!("Version actuelle de l'application : {}", self.current_version));
@@ -225,10 +216,11 @@ impl eframe::App for MyApp {
                             );
 
                             ui.add_space(5.0);
-                            if ui.button("📥 Télécharger et installer le MSI").clicked() {
+                            if ui.button("📥 Télécharger et lancer l'installeur MSI").clicked() {
                                 if let Err(e) = trigger_cargo_dist_update() {
-                                    eprintln!("Erreur lors du lancement de la mise à jour : {}", e);
+                                    eprintln!("Erreur lors de la mise à jour : {}", e);
                                 } else {
+                                    // On quitte l'application pour laisser l'installeur MSI faire son travail proprement
                                     std::process::exit(0);
                                 }
                             }
